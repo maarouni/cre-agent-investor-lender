@@ -2,6 +2,12 @@ from scipy.optimize import newton
 import numpy as np
 import numpy_financial as npf
 
+def safe_div(n, d):
+    try:
+        return n / d if d else 0.0
+    except:
+        return 0.0
+
 def robust_irr(cash_flows, guess=0.1):
     def npv(rate):
         return sum(cf / (1 + rate) ** i for i, cf in enumerate(cash_flows))
@@ -38,6 +44,10 @@ def calculate_metrics(purchase_price, monthly_rent, down_payment_pct, mortgage_r
     annual_mortgage = monthly_mortgage_payment * 12.0
 
     annual_cash_flow = annual_rent - annual_expenses - annual_mortgage
+
+    # ---- DSCR (Debt Service Coverage Ratio): NOI / Debt Service
+    noi_year1 = annual_rent - annual_expenses
+    dscr = safe_div(noi_year1, annual_mortgage)
 
     # ---- Metrics
     cap_rate = ((annual_rent - annual_expenses) / purchase_price) * 100.0 if purchase_price else 0.0
@@ -156,6 +166,7 @@ def calculate_metrics(purchase_price, monthly_rent, down_payment_pct, mortgage_r
         "Final Year ROI (%)": round(roi_list[-1], 2) if roi_list else 0,
         "First Year Cash Flow ($)": round(cash_flows[0], 2) if cash_flows else 0,
         "Monthly Mortgage ($)": round(monthly_mortgage_payment, 2),
+        "DSCR": round(dscr, 2),
         "Grade": grade,
         "10yr Cash Flow": cash_flows,  # kept for back-compat
         "Multi-Year Cash Flow": [round(x, 2) for x in cash_flows],

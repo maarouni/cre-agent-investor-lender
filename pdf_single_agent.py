@@ -378,13 +378,14 @@ def generate_pdf(
     final_year_roi = metrics.get("Final Year ROI (%)", None)
     coc = metrics.get("Cash-on-Cash Return (%)", None)
 
+    dscr_val = metrics.get("DSCR", None)
     curated = [
         ("Monthly Cash Flow ($)", fmt_money(monthly_cash_flow)),  # ✅ $ label
         (f"Expected Return (%) — by Year {year_x}" if year_x else "Expected Return (%)",
          fmt_pct(final_year_roi)),  # ✅ % label + Year X
         ("Monthly Cost vs Monthly Rent (%)", fmt_pct(coc)),  # ✅ % label (even if name is imperfect)
         ("Investment Grade", grade),
-
+        ("DSCR (NOI / Debt Service)", f"{dscr_val:.2f}" if isinstance(dscr_val, (int, float)) else "N/A"),
         ("Current Rent Assumption (Today)",
          f"${current_rent:,.0f}" if current_rent is not None else "N/A"),
 
