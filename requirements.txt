@@ -1,0 +1,9 @@
+streamlit
+matplotlib
+pandas
+python-dotenv
+numpy
+reportlab
+PyPDF2
+scipy
+numpy-financial
