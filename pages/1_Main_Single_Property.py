@@ -18,8 +18,8 @@ import numpy as np
 load_dotenv()
 
 st.set_page_config(page_title="Single Property Evaluator", layout="centered")
-st.title("🏡 Real Estate Deal Evaluator")
-st.markdown("Analyze the investment potential of a single property.")
+st.title("🏢 CRE Deal Analyzer")
+st.markdown("Model rents, expenses, leverage, and returns over your hold period.")
 
 # ===================================
 # 🔐 CLEAN PASSWORD GATE (No extra icons)
@@ -136,10 +136,11 @@ with tab1:
     # 📊 Long-Term Metrics
     # =============================
     st.subheader("📈 Long-Term Metrics")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("IRR (Operational) (%)", f"{metrics.get('IRR (Operational) (%)', 0):.2f}")
     col2.metric("IRR (Total incl. Sale) (%)", f"{metrics.get('IRR (Total incl. Sale) (%)', 0):.2f}")
     col3.metric("Equity Multiple", f"{metrics.get('equity_multiple', 0):.2f}")
+    col4.metric("DSCR (Year 1)", f"{metrics.get('DSCR', 0):.2f}")
 
     # =============================
     # 📈 Multi-Year Cash Flow Projection

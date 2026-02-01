@@ -46,15 +46,15 @@ if not st.session_state.authenticated:
 
 
 # ✅ Titles shown only after succesful login
-st.markdown("## 🏡 Real Estate Deal Evaluator")
+st.markdown("## 🏢 CRE Deal Analyzer")
 st.header("🔄 Side-by-Side Deal Comparison")
 
 st.markdown(
-    "<p style='font-size:18px; color:white; font-weight:bold;'>🔍 Compare investment options side-by-side to optimize ROI, cash flow, and equity growth.</p>",
+    "<p style='font-size:18px; color:white; font-weight:bold;'>🔍 Compare investment options side-by-side to optimize ROI, cash flow, DSCR, and equity growth.</p>",
     unsafe_allow_html=True
 )
 st.markdown(
-    "<p style='font-size:18px; color:white; font-weight:bold;'>Input real numbers for Property A & B to model ROI, cash flow, and appreciation.</p>",
+    "<p style='font-size:18px; color:white; font-weight:bold;'>Input real numbers for Property A & B to model ROI, cash flow, DSCR, and appreciation.</p>",
     unsafe_allow_html=True
 )
 
@@ -254,15 +254,17 @@ if isinstance(cf_b, str):
 st.subheader("📈 Multi-Year ROI, Rent & Cash Flow Comparison (A vs B)")
 st.subheader("📈 Long-Term Metrics")
 
-col1, col2, col3 = st.columns(3)
-col1.metric("IRR A (Operational) (%)", f"{metrics_a.get('IRR (Operational) (%)', 0):.2f}")
-col2.metric("IRR A (Total incl. Sale) (%)", f"{metrics_a.get('IRR (Total incl. Sale) (%)', 0):.2f}")
-col3.metric("Equity Multiple A", f"{metrics_a.get('equity_multiple', 0):.2f}")
+a1, a2, a3, a4 = st.columns(4)
+a1.metric("IRR A (Operational) (%)", f"{metrics_a.get('IRR (Operational) (%)', 0):.2f}")
+a2.metric("IRR A (Total incl. Sale) (%)", f"{metrics_a.get('IRR (Total incl. Sale) (%)', 0):.2f}")
+a3.metric("Equity Multiple A", f"{metrics_a.get('equity_multiple', 0):.2f}")
+a4.metric("DSCR A (Year 1)", f"{metrics_a.get('DSCR', 0):.2f}")
 
-col4, col5, col6 = st.columns(3)
-col4.metric("IRR B (Operational) (%)", f"{metrics_b.get('IRR (Operational) (%)', 0):.2f}")
-col5.metric("IRR B (Total incl. Sale) (%)", f"{metrics_b.get('IRR (Total incl. Sale) (%)', 0):.2f}")
-col6.metric("Equity Multiple B", f"{metrics_b.get('equity_multiple', 0):.2f}")
+b1, b2, b3, b4 = st.columns(4)
+b1.metric("IRR B (Operational) (%)", f"{metrics_b.get('IRR (Operational) (%)', 0):.2f}")
+b2.metric("IRR B (Total incl. Sale) (%)", f"{metrics_b.get('IRR (Total incl. Sale) (%)', 0):.2f}")
+b3.metric("Equity Multiple B", f"{metrics_b.get('equity_multiple', 0):.2f}")
+b4.metric("DSCR B (Year 1)", f"{metrics_b.get('DSCR', 0):.2f}")
 
 max_years = max(len(cf_a), len(cf_b))
 cf_a += [0] * (max_years - len(cf_a))
