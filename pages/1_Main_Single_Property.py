@@ -31,6 +31,10 @@ if "authenticated" not in st.session_state:
 if "pw_error" not in st.session_state:
     st.session_state.pw_error = False
 
+# ✅ Initialize improvements storage once per session
+if "improvements_list" not in st.session_state:
+    st.session_state.improvements_list = []    
+
 # If user is NOT authenticated, show password UI and stop the app below
 if not st.session_state.authenticated:
 
@@ -63,31 +67,25 @@ if not st.session_state.authenticated:
 # 📌 INPUT SIDEBAR
 # ================================
 st.sidebar.header("📌 Property Information")
-street_address = st.sidebar.text_input("Street Address (optional)")
+street_address = st.sidebar.text_input("Property Address (optional)")
 zip_code = st.sidebar.text_input("ZIP Code (optional)")
-purchase_price = st.sidebar.number_input("Purchase Price ($)", min_value=10000, value=300000, step=1000)
-monthly_rent = st.sidebar.number_input("Expected Monthly Rent ($)", min_value=0, value=2000, step=100)
+purchase_price = st.sidebar.number_input("Acquisition Price ($)", min_value=10000, value=300000, step=1000)
+monthly_rent = st.sidebar.number_input("In-Place Rent ($/mo)", min_value=0, value=2000, step=100)
 monthly_expenses = st.sidebar.number_input(
-    "Monthly Expenses ($: property tax + insurance + miscellaneous)",
+    "Operating Expenses (OpEx) ($/mo)",
     min_value=0, value=300, step=50
 )
+st.sidebar.caption("Includes property tax, insurance, and miscellaneous costs")
 
 # 💰 Financing & Growth
 st.sidebar.header("💰 Financing & Growth")
-down_payment_pct = st.sidebar.slider("Down Payment (%)", 0, 100, 20)
-mortgage_rate = st.sidebar.slider("Mortgage Rate (%)", 0.0, 15.0, 6.5)
-mortgage_term = st.sidebar.number_input("Mortgage Term (years)", min_value=1, value=30)
-vacancy_rate = st.sidebar.slider("Vacancy Rate (%)", 0, 100, 5)
-appreciation_rate = st.sidebar.slider("Annual Appreciation Rate (%)", 0, 10, 3)
-rent_growth_rate = st.sidebar.slider("Annual Rent Growth Rate (%)", 0, 10, 3)
-time_horizon = st.sidebar.slider("🏁 Investment Time Horizon (Years)", 1, 30, 10)
-
-# 👤 Agent Information (always available; used for Agent Report tab)
-#st.sidebar.header("👤 Agent Information")
-#agent_name = st.sidebar.text_input("Agent Name")
-#brokerage_name = st.sidebar.text_input("Brokerage Name")
-#client_name = st.sidebar.text_input("Client Name")
-#agent_notes = st.sidebar.text_area("Notes for Client")
+down_payment_pct = st.sidebar.slider("Equity Contribution (%)", 0, 100, 20)
+mortgage_rate = st.sidebar.slider(" Loan Interest Rate (%)", 0.0, 15.0, 6.5)
+mortgage_term = st.sidebar.number_input("Amortization Term (years)", min_value=1, value=30)
+vacancy_rate = st.sidebar.slider("Economic Vacancy (%)", 0, 100, 5)
+appreciation_rate = st.sidebar.slider("Annual Appreciation (%)", 0, 10, 3)
+rent_growth_rate = st.sidebar.slider("Annual Rent Growth (%)", 0, 10, 3)
+time_horizon = st.sidebar.slider("🏁 Hold Period (Years)", 1, 30, 10)
 
 # ================================
 # 🔢 RUN CALCULATIONS
@@ -151,7 +149,7 @@ with tab1:
     years = list(range(1, time_horizon + 1))
 
     ax.plot(years, metrics["Multi-Year Cash Flow"], marker='o', label="Multi-Year Cash Flow ($)")
-    ax.plot(years, metrics["Annual Rents $ (by year)"], marker='s', linestyle='--', label="Projected Rent ($)")
+    ax.plot(years, metrics["Annual Rents $ (by year)"], marker='s', linestyle='--', label="Pro Forma Rent ($/yr)")
 
     ax.set_xlabel("Year")
     ax.set_ylabel("Projected Cash Flow / Rent ($)")
@@ -165,7 +163,7 @@ with tab1:
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax.legend(lines + lines2, labels + labels2, loc="upper left")
 
-    ax.set_title("Multi - Year Projected Cash Flow & ROI")
+    ax.set_title("Hold Period Cash Flow, Rent & ROI")
     st.pyplot(fig)
 
     # =============================
@@ -280,11 +278,12 @@ with tab1:
 
         valid_df = improvements_df.dropna(subset=["Amount ($)"])
         valid_df = valid_df[valid_df["Amount ($)"] > 0]
-        # Always reset improvements_list so it never carries over from a prior run
+
+        # ✅ Persist improvements across reruns & tabs
         if valid_df.empty:
-            improvements_list = []
+            st.session_state.improvements_list = []
         else:
-            improvements_list = valid_df.to_dict(orient="records")
+            st.session_state.improvements_list = valid_df.to_dict(orient="records")
 
         total_cost = valid_df["Amount ($)"].sum()
         weighted_roi = (
@@ -292,19 +291,10 @@ with tab1:
             if total_cost > 0 else 0
         )
 
-        st.success(f"📊 Weighted ROI from Capital Improvements: {weighted_roi:.2f}% (based on ${total_cost:,.0f} spent)")
-        # ---- Extract first improvement for Agent PDF (simple 1-item support) ----
-        #improvement_name = None
-        #improvement_cost = 0.0
-
-        #if not valid_df.empty:
-            #first_row = valid_df.iloc[0]
-            #improvement_name = str(first_row["Description"])
-            #if pd.notna(first_row["Amount ($)"]):
-                #improvement_cost = float(first_row["Amount ($)"])
-        # ---- Send full list of improvements to the Agent PDF ----
-        #improvements_list = valid_df.to_dict(orient="records")
-
+        st.success(
+            f"📊 Weighted ROI from Capital Improvements: "
+            f"{weighted_roi:.2f}% (based on ${total_cost:,.0f} spent)"
+        )
 
 # ===================================================================
 # TAB 2 — REAL INSIGHTS (UNCHANGED)
@@ -492,10 +482,7 @@ on the left; this tab just adds your branding.
         brokerage_name=brokerage_name or "Your Brokerage",
         client_name=client_name or "Client",
         agent_notes=agent_notes or "",
-        #improvements=valid_df.to_dict(orient="records") # ⭐ NEW
-        #improvement_name=improvement_name,
-        #improvement_cost=improvement_cost
-        improvements_list=improvements_list  # ⭐ NEW
+        improvements_list=st.session_state.improvements_list  # ⭐ NEW
     )
 
     if agent_pdf_bytes is not None:
